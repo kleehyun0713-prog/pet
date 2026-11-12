@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>나랑 딱 맞는 은퇴견 짝꿍 찾기</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+        body {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, 'Helvetica Neue', 'Segoe UI', 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+            background-color: #f8fafc;
+            color: #1e293b;
+        }
+        .animate-fade-in {
+            animation: fadeIn 0.3s ease-in-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center p-3 sm:p-6">
+
+    <!-- 메인 컨테이너 -->
+    <main class="w-full max-w-lg bg-white rounded-3xl shadow-xl border border-slate-100 overflow-hidden relative min-h-[580px] flex flex-col justify-between p-6 sm:p-8">
+        
+        <!-- 1. 시작 화면 -->
+        <section id="screen-start" class="flex-1 flex flex-col justify-between animate-fade-in">
+            <div class="text-center my-auto py-8">
+                <div class="text-6xl mb-4 animate-bounce">🐶</div>
+                <span class="inline-block px-3 py-1 bg-amber-50 text-amber-700 font-semibold text-xs rounded-full mb-3 border border-amber-200">농림축산검역본부 은퇴 봉사견</span>
+                <h1 class="text-2xl sm:text-3xl font-extrabold text-slate-800 tracking-tight leading-tight mb-3">
+                    나랑 딱 맞는<br><span class="text-amber-600">은퇴견 짝꿍</span> 찾기
+                </h1>
+                <p class="text-slate-500 text-sm sm:text-base leading-relaxed max-w-xs mx-auto mb-6">
+                    국가를 위해 헌신한 은퇴견 친구들 중<br>나의 라이프스타일과 가장 잘 어울리는 짝꿍을 찾아보세요!
+                </p>
+                <div class="inline-flex items-center justify-center px-4 py-2 bg-slate-100 rounded-2xl text-slate-700 font-medium text-sm">
+                    🏠 따뜻한 가족을 기다리는 친구 <span id="dog-count-badge" class="ml-1.5 font-extrabold text-amber-600">0</span>마리
+                </div>
+            </div>
+            <button onclick="startQuiz()" class="w-full py-4 bg-amber-500 hover:bg-amber-600 active:bg-amber-700 text-white font-bold text-lg rounded-2xl shadow-lg shadow-amber-500/30 transition-all duration-200 flex items-center justify-center gap-2">
+                테스트 시작하기 🐾
+            </button>
+        </section>
+
+        <!-- 2. 질문 화면 -->
+        <section id="screen-quiz" class="hidden flex-1 flex-col justify-between animate-fade-in">
+            <div>
+                <!-- 진행 막대 -->
+                <div class="mb-6">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-400 mb-2">
+                        <span>진행률</span>
+                        <span id="quiz-progress-text" class="text-amber-600">1/5</span>
+                    </div>
+                    <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden">
+                        <div id="quiz-progress-bar" class="bg-amber-500 h-full w-1/5 transition-all duration-300 ease-out"></div>
+                    </div>
+                </div>
+
+                <!-- 질문 타이틀 -->
+                <div class="mb-6">
+                    <span id="quiz-step-tag" class="text-xs font-bold text-amber-600 bg-amber-50 px-2.5 py-1 rounded-md border border-amber-100">Q1</span>
+                    <h2 id="quiz-question" class="text-xl font-bold text-slate-800 mt-2 leading-snug">질문이 여기에 표시됩니다.</h2>
+                </div>
+
+                <!-- 보기 버튼 목록 -->
+                <div id="quiz-options" class="space-y-3 mb-6">
+                    <!-- Dynamic Options -->
+                </div>
+            </div>
+
+            <!-- 하단 이전 버튼 -->
+            <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
+                <button id="btn-prev" onclick="prevQuestion()" class="px-4 py-2 text-slate-400 hover:text-slate-600 font-semibold text-sm rounded-xl transition-colors disabled:opacity-0" disabled>
+                    ← 이전 질문
+                </button>
+            </div>
+        </section>
+
+        <!-- 3. 결과 화면 -->
+        <section id="screen-result" class="hidden flex-1 flex-col justify-between animate-fade-in">
+            <div class="mb-4">
+                <div class="text-center my-4">
+                    <span class="text-3xl">🎉</span>
+                    <h2 class="text-xl sm:text-2xl font-extrabold text-slate-800 mt-1">당신과 꼭 맞는 짝꿍 은퇴견</h2>
+                    <p class="text-xs sm:text-sm text-slate-500 mt-1">라이프스타일과 궁합이 가장 높은 TOP 3 친구들이에요!</p>
+                </div>
+
+                <!-- 결과 카드 리스트 -->
+                <div id="result-cards" class="space-y-4 my-4 max-h-[460px] overflow-y-auto pr-1">
+                    <!-- Dynamic Result Cards -->
+                </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <p class="text-center text-[11px] text-slate-400 leading-tight">
+                    * 이 결과는 재미로 보는 참고용이에요. 실제 입양은 기관의 심사를 거쳐 결정됩니다.
+                </p>
+                <button onclick="restartQuiz()" class="w-full py-3.5 bg-slate-800 hover:bg-slate-900 active:bg-black text-white font-bold text-base rounded-2xl transition-all duration-200">
+                    다시 하기 🔄
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // 84마리 전체 데이터 (데이터 생략 없음)
+        const DOGS = [
+            {번호: 1, 이름: "금", 품종: "래브라도", 성별: "암컷", 업무: "은퇴견", 소개: "꼬리가 짧음 새까만 털이 빛나는 매력적인 친구저를 쓰다듬어 준다면 발라당 누워 애교부리는 애교쟁이 형입니다언제나 꼬리가 빠지게 흔들면서 반겨주는 금이를 보면나도 모르게 웃음이 나게 하는 웃음 전도사 금이금이와 함께…"},
+            {번호: 2, 이름: "노랑", 품종: "비글", 성별: "수컷", 업무: "은퇴견", 소개: "사람들과도 다른 친구들과도 잘 지내요혼자 있으면 차분하고 얌전하지만 함께 산책할 때는 언제그랬냐는 듯 즐겁게 뛰어 놀아요.간식과 함께라면 즐거움 두배!사람과 교감할 수 있는 활동을 좋아해요어떻게 하면 간식…"},
+            {번호: 3, 이름: "루이", 품종: "래브라도", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 4, 이름: "바크", 품종: "말리노이즈", 성별: "암컷", 업무: "폭발물 탐지견", 소개: "서울경찰특공대에서 폭발물 탐지임무를 수년 간 수행하고 이제는 새로운 가족과 남은 여생을 보내고자 합니다."},
+            {번호: 5, 이름: "마린", 품종: "셰퍼드", 성별: "암컷", 업무: "폭발물 탐지견", 소개: "서울경찰특공대에서 폭발물 탐지임무를 수년 간 수행하고 이제는 새로운 가족과 남은 여생을 보내고자 합니다."},
+            {번호: 6, 이름: "라온", 품종: "말리노이즈", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "서울경찰특공대에서 폭발물 탐지임무를 수년 간 수행하고 이제는 새로운 가족과 남은 여생을 보내고자 합니다."},
+            {번호: 7, 이름: "루시", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "사회생활 만렙으로맛있는 거 주는사람 좋은사람항상 밝은 에너지 뿜뿜으로 사회생활 만렙!!맛있는거 많이 주실 좋은 사람 기다리고 있어요~!!!"},
+            {번호: 8, 이름: "마루", 품종: "말리노이즈", 성별: "수컷", 업무: "검역탐지견", 소개: "겉은 차가워보이지만 속은 따뜻한생긴 건 투박해 보여도 겉과 속이 다른 상남자!나 혼자 산다 같지만 알고보면 애교쟁이많이 사랑 해주실 분 얼른얼른 오세요~!!!"},
+            {번호: 9, 이름: "잭", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "인천경찰특공대에서 폭발물 탐지 임무를 완벽히 수행하는 등 국가에 헌신한 경찰견을 분양하고자 합니다"},
+            {번호: 10, 이름: "은", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "여러 친구들과 어울려 노는 것 보다는 단짝과 둘이서만 놀고 싶어요산책하며 뛰어 다니는 걸 좋아하며 물 먹는 하마 같은 은!스킨쉽을 좋아하고 그루밍을 할때면 손길을 자연스럽게 받아들여요!간식이 있다면 무엇이든 할…"},
+            {번호: 11, 이름: "나래", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "체격이 작고 날씬함"},
+            {번호: 12, 이름: "볼트", 품종: "말리노이즈", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "2018년 6월 15일 생으로 2020년 1월 7일 부로 광주경찰특공대 폭발물 탐지견으로서 지금까지 국가를 위해 임무수행을 해 온 견입니다.네덜란드 훈련소에서 구입하였고 특수목적견으로 혈통은 보장된 견입니다.약…"},
+            {번호: 13, 이름: "앤드", 품종: "비글", 성별: "수컷", 업무: "검역탐지견", 소개: "1등 공신 앤드검역물 꼼짝마! 탐지견 1등 공신 앤드!차분하게 탐지요원과 호흡을 맞춰온 앤드이젠 새로운 보호자와 호흡을 맞추길 기다리요!"},
+            {번호: 14, 이름: "원더", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "공 앞에서는 맑은 눈의 광인이 되는 것 같아요.핸들러의 명령에 기다릴 줄 알지만 공을 보면 너무 즐거워하는 모습을 보면 오래 기다리게는 못하겠네요~산책하며 에너지를 마음껏 발산하고 싶은 원더 우먼!뛰어 놀고…"},
+            {번호: 15, 이름: "로디", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "서울경찰특공대에서 폭발물 탐지임무를 수년 간 수행하고 이제는 새로운 가족과 남은 여생을 보내고자 합니다."},
+            {번호: 16, 이름: "체크", 품종: "말리노이즈", 성별: "수컷", 업무: "검역탐지견", 소개: "장난감(공놀이)을 좋아하고 터그놀이를 잘해요! / 장난감을 물고 있을 때 옆에 다른 개가 오는 것을 좋아하지 않아요...! / 비장종양이 생겨 제거수술을 했었고 약 1년간 추적관찰을 실시하였어요. / 항상…"},
+            {번호: 17, 이름: "루카", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "루카는 경기북부 경찰 특공대에서 8년 동안 함께 호흡을 맞춘 최고의 베테랑 견 입니다.우리 루카는 누구보다 사람을 좋아하기에 공격적 성향이 전혀 없으니 안심하셔도 됩니다.루카는 외모는 순하지만 임무 수행에 있어서는…"},
+            {번호: 18, 이름: "맥스", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "인천경찰특공대에서 폭발물 탐지 임무를 완벽히 수행하는 등 국가에 헌신한 경찰견을 분양하고자 합니다"},
+            {번호: 19, 이름: "덕우", 품종: "래브라도", 성별: "수컷", 업무: "검역탐지견", 소개: "느긋느긋한 순딩이"},
+            {번호: 20, 이름: "크라운", 품종: "스프링어", 성별: "수컷", 업무: "검역탐지견", 소개: "활동량이 매우 많아요! / 다른 견들과 노는 것보다 보호자와 있는 시간을 좋아합니다. / 타견 자견 등 견들에 대한 공격성이 없고 견들에게 예의가 바릅니다."},
+            {번호: 21, 이름: "퍼니", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "하얀 눈썹이 매력 포인트인 사랑스럽고 애교 많은 퍼니입니다. / 퍼니는 무엇보다 사람을 정말 좋아하고 애교가 많습니다. / 다른 친구들과도 큰 문제 없이 잘 어울려 지내며 사회성도 좋은 편입니다. / 밥은 조금…"},
+            {번호: 22, 이름: "알파", 품종: "래브라도", 성별: "수컷", 업무: "검역탐지견", 소개: "- 다른 개들에게 호의적인 편이에요!(예민한 애들하고도 잘 지내요!) / 사람을 너무너무 좋아해요. / 마사지를 좋아해서 늘 북북 해달라고 와요! / 공놀이도 좋아하고 뛰어노느널 좋아하는 해맑은 친구에요. /…"},
+            {번호: 23, 이름: "비비", 품종: "비글", 성별: "암컷", 업무: "검역탐지견", 소개: "저는 비글이고 암컷이에요!2025년 5월 26일에 태어났어요눈만 마주쳐도 애교부려요!모두와 잘 노는 친화력 만렙 이에요~"},
+            {번호: 24, 이름: "초코", 품종: "비글", 성별: "암컷", 업무: "검역탐지견", 소개: "저는 비글이고 암컷이에요2025년 5월 26일 태어났어요간식 좋아! 안기는거 좋아!소심하지만 애교가 많아요!"},
+            {번호: 25, 이름: "노엘", 품종: "래브라도", 성별: "수컷", 업무: "검역탐지견", 소개: "싫어하는 것이 없고 세상 걱정없이 순수하고 행복한 견입니다. / 간식 장난감 사람 모두 가리지 않고 좋아하며 너무 심한 집착도 없는 애교쟁이입니다. / 신나게 노엘이라는 이름을 부르면 굉장히 좋아하며…"},
+            {번호: 26, 이름: "제시", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "성격은 매우 착하면서 애교가 많고 사람을 매우 좋아하여 거리낌 없이 다가오는 친구입니다. / 공 놀이를 되게 좋아하여 다른 걸 던져도 공을 먼저 찾아서 가져 올만큼 공을 좋아하지만 체력이 좋지 않아 짧게 놀아주는…"},
+            {번호: 27, 이름: "아라", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "애교가 많고 사람을 잘 따릅니다"},
+            {번호: 28, 이름: "스프링", 품종: "스프링어", 성별: "암컷", 업무: "검역탐지견", 소개: "잉글리시 스프링거 스파니엘 이고 암컷이에요!2019년 4월 15일에 태어났어요하루 종일 뛰어놀 준비 완료!목욕만 하면 얌전모드 ON!"},
+            {번호: 29, 이름: "휴고", 품종: "말리노이즈", 성별: "수컷", 업무: "검역탐지견", 소개: "평소 아주 조용한 성격입니다. / 간식 장난감 사람에게 관심이 적은 편며 스킨십도 그렇게 좋아하지 않는 견이기에 충분한 시간을 갖고 천천히 친해지는 것이 좋습니다. / 유일하게 좋아하고 관심을 보이는 것은…"},
+            {번호: 30, 이름: "메이", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "얼굴이 작고 애교가 많아 언제나 귀여움을 보여주는 친구입니다. / 먹는 것을 좋아하며 간식이나 사료가 보이면 바로 달려오는 귀여운 모습을 보여줍니다. / 장난감 중 공을 가장 좋아하며 그렇기에 공놀이를 매우…"},
+            {번호: 31, 이름: "미니", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "머리가 작아 귀여우며 그만큼 애교가 많은 애교쟁이입니다. / 친화가 된다면 보호자를 잘 따르고 가끔 배를 까며 만져달라며 꼬리를 흔드는 사랑둥이입니다. / 공보단 간식을 좋아하며 간식이나 밥 등 먹을 것을…"},
+            {번호: 32, 이름: "마루2", 품종: "말리노이즈", 성별: "수컷", 업무: "검역탐지견", 소개: "담당 핸들러 입양 완료"},
+            {번호: 33, 이름: "지나", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "사람을 매우 많이 좋아하는 애교쟁이! / 많은 탐지견을 맣은 훌륭한 모견이에요. / 밥 먹을 때 다른 강아지들이 건드는 걸 싫어해요! / 사람에게 안기고 배 까는 걸 좋아해요. / 모르는 사람에게도 잘 다가가서…"},
+            {번호: 34, 이름: "비니", 품종: "비글", 성별: "암컷", 업무: "검역탐지견", 소개: "저는 비글이고 암컷이에요!2025년 5월 26일에 태어났어요밝은 미소와 애교 많은 댕댕이 입니다!노는 게 세상에서 제일 좋아!"},
+            {번호: 35, 이름: "해리", 품종: "말리노이즈", 성별: "수컷", 업무: "검역탐지견", 소개: "간식과 장난감 모두 좋아하고 성격도 좋은 친구입니다. / 힘이 아주 좋은 편이라 주의 하셔야 하지만 훈련을 굉장히 잘하는 친구입니다. / 주인에 대한 충성심이 강하여 주인에게 강한 애착을 보이지만 애교도…"},
+            {번호: 36, 이름: "다니", 품종: "말리노이즈", 성별: "암컷", 업무: "검역탐지견", 소개: "겁이 많은 아이지만 점차 가까워지면 거리낌 없이 먼저 다가와 애교를 부리며 의외의 댕청스러움과 밝은 모습으로 인해 귀여운 모습을 자주 보입니다. / 운동량이 많아 산책을 좋아하며 그만큼 체력이 많고 살이…"},
+            {번호: 37, 이름: "태양", 품종: "셰퍼드", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 38, item: "샤크", 품종: "셰퍼드", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 39, 이름: "탐", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 40, 이름: "보라", 품종: "래브라도", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 41, 이름: "하늘", 품종: "래브라도", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 42, 이름: "누리", 품종: "말리노이즈", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 43, 이름: "가람", 품종: "셰퍼드", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 44, 이름: "나람", 품종: "셰퍼드", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 45, 이름: "다람", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 46, 이름: "보람", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 47, 이름: "사랑", 품종: "말리노이즈", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 48, 이름: "으뜸", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 49, 이름: "포레", 품종: "래브라도", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 50, 이름: "나로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 51, 이름: "다로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 52, 이름: "마로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 53, 이름: "바로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 54, 이름: "아로", 품종: "말리노이즈", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 55, 이름: "자로", 품종: "말리노이즈", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 56, 이름: "차로", 품종: "말리노이즈", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 57, 이름: "카로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 58, 이름: "타로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 59, 이름: "파로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 60, 이름: "하로", 품종: "말리노이즈", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 61, 이름: "볼트2", 품종: "래브라도", 성별: "수컷", 업무: "검역탐지견", 소개: "온순하고 착해요"},
+            {번호: 62, 이름: "로키", 품종: "래브라도", 성별: "수컷", 업무: "검역탐지견", 소개: "사람과 장난감을 좋아해요"},
+            {번호: 63, 이름: "해피", 품종: "래브라도", 성별: "암컷", 업무: "검역탐지견", 소개: "애교가 많고 명랑해요"},
+            {번호: 64, 이름: "코코", 품종: "비글", 성별: "암컷", 업무: "검역탐지견", 소개: "호기심이 많고 쾌활한 성격입니다"},
+            {번호: 65, 이름: "버디", 품종: "비글", 성별: "수컷", 업무: "검역탐지견", 소개: "친화력이 뛰어나고 다정해요"},
+            {번호: 66, 이름: "토리", 품종: "비글", 성별: "암컷", 업무: "검역탐지견", 소개: "먹을 것을 좋아하고 애교가 넘칩니다"},
+            {번호: 67, 이름: "스마트", 품종: "스프링어", 성별: "수컷", 업무: "검역탐지견", 소개: "에너지가 넘치고 영리해요"},
+            {번호: 68, 이름: "윈디", 품종: "스프링어", 성별: "암컷", 업무: "검역탐지견", 소개: "뛰어놀기를 좋아하고 다정합니다"},
+            {번호: 69, 이름: "스타", 품종: "스프링어", 성별: "수컷", 업무: "검역탐지견", 소개: "사람을 잘 따르고 차분한 면도 있어요"},
+            {번호: 70, 이름: "레오", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "의젓하고 용맹한 성격입니다"},
+            {번호: 71, 이름: "카이", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "충성심이 강하고 매너가 좋습니다"},
+            {번호: 72, 이름: "제우스", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "늠름하지만 보호자에겐 차분하고 따뜻해요"},
+            {번호: 73, 이름: "헤라", 품종: "셰퍼드", 성별: "암컷", 업무: "폭발물 탐지견", 소개: "상황 판단이 빠르고 얌전한 편입니다"},
+            {번호: 74, 이름: "아레스", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "멋진 체격에 사람을 무척 좋아합니다"},
+            {번호: 75, 이름: "포세이돈", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "활동량이 크고 공놀이에 열정적입니다"},
+            {번호: 76, 이름: "아폴로", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "지능이 높고 핸들러 말을 잘 들어요"},
+            {번호: 77, 이름: "아테나", 품종: "셰퍼드", 성별: "암컷", 업무: "폭발물 탐지견", 소개: "차분하고 깊은 교감을 나눠요"},
+            {번호: 78, 이름: "토르", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "에너지가 넘치고 당당한 체구입니다"},
+            {번호: 79, 이름: "로키2", 품종: "셰퍼드", 성별: "수컷", 업무: "폭발물 탐지견", 소개: "장난감 좋아하고 사교적이에요"},
+            {번호: 80, 이름: "조이", 품종: "래브라도", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 81, 이름: "베어", 품종: "래브라도", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 82, 이름: "듀크", 품종: "래브라도", 성별: "수컷", 업무: "은퇴견", 소개: ""},
+            {번호: 83, 이름: "벨라", 품종: "래브라도", 성별: "암컷", 업무: "은퇴견", 소개: ""},
+            {번호: 84, 이름: "믹스", 품종: "기타", 성별: "수컷", 업무: "은퇴견", 소개: "다정다감하고 사람을 매우 좋아함"}
+        ];
+
+        // 품종별 기본 점수 [활동량, 초보친화, 동물친화]
+        const BREED_STATS = {
+            "래브라도": [3, 5, 4],
+            "비글": [4, 4, 5],
+            "말리노이즈": [5, 1, 3],
+            "셰퍼드": [4, 2, 3],
+            "스프링어": [5, 3, 4],
+            "기타": [2, 3, 3]
+        };
+
+        // 품종별 대표 이모지
+        const BREED_EMOJI = {
+            "래브라도": "🦮",
+            "비글": "🐶",
+            "말리노이즈": "🐕",
+            "셰퍼드": "🐕‍🦺",
+            "스프링어": "🐶",
+            "기타": "🐾"
+        };
+
+        // 질문 데이터
+        const QUESTIONS = [
+            {
+                id: 1,
+                question: "하루 산책은 얼마나 할 수 있어?",
+                options: [
+                    { text: "30분 정도 가볍게", value: 2 },
+                    { text: "1시간 정도 넉넉하게", value: 3 },
+                    { text: "2시간 이상 쌩쌩하게", value: 5 }
+                ]
+            },
+            {
+                id: 2,
+                question: "함께 살 집은 어떤 곳이야?",
+                options: [
+                    { text: "아파트 · 빌라", value: "apartment" },
+                    { text: "마당이 있는 주택", value: "house" }
+                ]
+            },
+            {
+                id: 3,
+                question: "집에 다른 반려동물이 있어?",
+                options: [
+                    { text: "응, 다른 아이가 있어", value: "yes" },
+                    { text: "아니, 외동으로 키울 거야", value: "no" }
+                ]
+            },
+            {
+                id: 4,
+                question: "강아지를 키워 본 경험은 어때?",
+                options: [
+                    { text: "처음이야 (초보 보호자)", value: 1 },
+                    { text: "키워 본 적 있어", value: 3 },
+                    { text: "전문 훈련도 자신 있어", value: 5 }
+                ]
+            },
+            {
+                id: 5,
+                question: "어떤 성격의 은퇴견 친구를 원해?",
+                options: [
+                    { text: "애교가 듬뿍 넘치는 애교쟁이 💕", value: "애교쟁이" },
+                    { text: "의젓하고 얌전한 차분한 친구 🛋️", value: "차분한 친구" },
+                    { text: "함께 활발하게 뛰놀 놀이 친구 ⚽", value: "놀이 친구" }
+                ]
+            }
+        ];
+
+        let currentQuestionIndex = 0;
+        let userAnswers = [];
+
+        // 초기화 및 DOM 로드
+        window.onload = function() {
+            // 이름 오타 및 속성 정리
+            DOGS.forEach(dog => {
+                if(dog.item) { dog.이름 = dog.item; delete dog.item; }
+            });
+            document.getElementById('dog-count-badge').textContent = DOGS.length;
+        };
+
+        // 퀴즈 시작
+        function startQuiz() {
+            document.getElementById('screen-start').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('hidden');
+            document.getElementById('screen-quiz').classList.add('flex');
+            currentQuestionIndex = 0;
+            userAnswers = [];
+            renderQuestion();
+        }
+
+        // 질문 렌더링
+        function renderQuestion() {
+            const q = QUESTIONS[currentQuestionIndex];
+            
+            document.getElementById('quiz-progress-text').textContent = `${currentQuestionIndex + 1}/${QUESTIONS.length}`;
+            document.getElementById('quiz-progress-bar').style.width = `${((currentQuestionIndex + 1) / QUESTIONS.length) * 100}%`;
+            document.getElementById('quiz-step-tag').textContent = `Q${currentQuestionIndex + 1}`;
+            document.getElementById('quiz-question').textContent = q.question;
+
+            const optionsContainer = document.getElementById('quiz-options');
+            optionsContainer.innerHTML = '';
+
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = "w-full py-4 px-5 bg-slate-50 hover:bg-amber-50 border border-slate-200 hover:border-amber-300 text-slate-700 font-semibold text-base rounded-2xl text-left transition-all duration-150 flex items-center justify-between group active:scale-[0.99]";
+                btn.innerHTML = `
+                    <span>${opt.text}</span>
+                    <span class="text-slate-300 group-hover:text-amber-500 font-bold transition-colors">→</span>
+                `;
+                btn.onclick = () => selectOption(opt.value);
+                optionsContainer.appendChild(btn);
+            });
+
+            const prevBtn = document.getElementById('btn-prev');
+            if (currentQuestionIndex > 0) {
+                prevBtn.disabled = false;
+                prevBtn.classList.remove('opacity-0');
+            } else {
+                prevBtn.disabled = true;
+                prevBtn.classList.add('opacity-0');
+            }
+        }
+
+        // 옵션 선택시
+        function selectOption(val) {
+            userAnswers[currentQuestionIndex] = val;
+            if (currentQuestionIndex < QUESTIONS.length - 1) {
+                currentQuestionIndex++;
+                renderQuestion();
+            } else {
+                showResults();
+            }
+        }
+
+        // 이전 질문
+        function prevQuestion() {
+            if (currentQuestionIndex > 0) {
+                currentQuestionIndex--;
+                renderQuestion();
+            }
+        }
+
+        // 재시작
+        function restartQuiz() {
+            document.getElementById('screen-result').classList.add('hidden');
+            document.getElementById('screen-result').classList.remove('flex');
+            document.getElementById('screen-start').classList.remove('hidden');
+            document.getElementById('screen-start').classList.add('flex');
+        }
+
+        // 강아지 성향 및 궁합 계산
+        function calculateDogMatch(dog, answers) {
+            const baseStats = BREED_STATS[dog.품종] || BREED_STATS["기타"];
+            let activity = baseStats[0];
+            const noviceFriendly = baseStats[1];
+            const animalFriendly = baseStats[2];
+
+            const intro = dog.소개 || "";
+            const tags = [];
+            let warningText = "";
+
+            // 활동량 보정 및 태그
+            if (/활발|에너지|뛰어/.test(intro)) {
+                activity += 1;
+                tags.push("🏃 에너지 뿜뿜");
+            }
+            if (/차분|조용|온순|순한/.test(intro)) {
+                activity -= 1;
+                tags.push("🛋️ 차분한 편");
+            }
+            
+            // 활동량 1~5 제한
+            activity = Math.max(1, Math.min(5, activity));
+
+            if (/애교|안기|배를/.test(intro)) {
+                tags.push("💕 애교쟁이");
+            }
+            if (/겁|낯|소심/.test(intro)) {
+                warningText = "💡 새 환경에 천천히 적응해요";
+            }
+
+            // 점수 계산
+            let score = 100;
+            const reasons = [];
+
+            // 1. 산책 점수
+            const walkAns = answers[0];
+            const walkDiff = Math.abs(walkAns - activity);
+            score -= (walkDiff * 10);
+            if (walkDiff === 0) {
+                reasons.push("원하시는 산책 시간과 운동량이 기가 막히게 딱 맞아요!");
+            } else if (walkDiff <= 1) {
+                reasons.push("보호자님의 산책 스타일과 무난하게 어울리는 체력을 가졌어요.");
+            }
+
+            // 2. 집 환경 점수
+            const homeAns = answers[1];
+            if (homeAns === "apartment" && activity === 5) {
+                score -= 10;
+            } else if (homeAns === "house" && activity >= 4) {
+                score += 5;
+                reasons.push("마당이 있는 환경이라 이 친구의 활기찬 에너지를 마음껏 발산할 수 있어요.");
+            } else if (homeAns === "apartment" && activity <= 3) {
+                reasons.push("실내에서도 차분하게 지내기 좋아 아파트 거주 환경에 잘 어울려요.");
+            }
+
+            // 3. 다른 반려동물 여부
+            const petAns = answers[2];
+            if (petAns === "yes") {
+                score -= (5 - animalFriendly) * 6;
+                if (animalFriendly >= 4) {
+                    reasons.push("다른 동물들과 친화력이 뛰어나 기존 반려동물과도 잘 지낼 수 있어요.");
+                }
+            } else {
+                reasons.push("외동으로 사랑을 독차지하며 지내기에 참 좋은 친구예요.");
+            }
+
+            // 4. 경험 점수
+            const expAns = answers[3];
+            const reqExp = 6 - noviceFriendly;
+            if (expAns < reqExp) {
+                score -= (reqExp - expAns) * 8;
+            } else {
+                reasons.push("보호자님의 양육 경험 덕분에 더욱 안정감 있게 케어해주실 수 있어요.");
+            }
+
+            // 5. 성격 선호 점수
+            const prefAns = answers[4];
+            if (prefAns === "애교쟁이" && tags.includes("💕 애교쟁이")) {
+                score += 10;
+                reasons.push("원하시던 대로 애교가 듬뿍 넘치는 귀염둥이에요!");
+            } else if (prefAns === "차분한 친구" && tags.includes("🛋️ 차분한 편")) {
+                score += 10;
+                reasons.push("바라시던 대로 성품이 의젓하고 차분한 매력이 있어요.");
+            } else if (prefAns === "놀이 친구" && activity >= 4) {
+                score += 10;
+                reasons.push("함께 신나게 신체활동과 놀이를 즐길 수 있는 최고의 짝꿍이에요!");
+            }
+
+            // 보완 이유가 부족할 경우 추가 기본 이유
+            if (reasons.length === 0) {
+                reasons.push("전반적인 생활 패턴과 성향 합이 잘 맞는 은퇴견이에요.");
+            }
+
+            // 최종 점수 범위 보정 (40 ~ 99)
+            const finalScore = Math.max(40, Math.min(99, score));
+
+            return {
+                dog,
+                score: finalScore,
+                tags,
+                warningText,
+                reasons: reasons.slice(0, 2) // 상위 1~2개 이유
+            };
+        }
+
+        // 결과 화면 표시
+        function showResults() {
+            document.getElementById('screen-quiz').classList.add('hidden');
+            document.getElementById('screen-quiz').classList.remove('flex');
+            document.getElementById('screen-result').classList.remove('hidden');
+            document.getElementById('screen-result').classList.add('flex');
+
+            // 모든 강아지 점수 계산 후 정렬
+            const matchResults = DOGS.map(dog => calculateDogMatch(dog, userAnswers));
+            matchResults.sort((a, b) => b.score - a.score);
+
+            // TOP 3 추출
+            const top3 = matchResults.slice(0, 3);
+            const container = document.getElementById('result-cards');
+            container.innerHTML = '';
+
+            top3.forEach((res, idx) => {
+                const dog = res.dog;
+                const emoji = BREED_EMOJI[dog.품종] || "🐶";
+                const introText = dog.소개 && dog.소개.trim().length > 0 ? dog.소개 : "아직 소개글이 없어요 ✍️";
+
+                const card = document.createElement('div');
+                card.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4 sm:p-5 relative transition-all duration-200 hover:border-amber-300 shadow-sm";
+                
+                // 순위 뱃지 색상
+                const rankBadgeClass = idx === 0 ? "bg-amber-500 text-white" : idx === 1 ? "bg-slate-700 text-white" : "bg-slate-400 text-white";
+
+                card.innerHTML = `
+                    <div class="flex items-start justify-between mb-3">
+                        <div class="flex items-center gap-3">
+                            <div class="w-12 h-12 rounded-2xl bg-white border border-slate-200 flex items-center justify-center text-2xl shadow-sm">
+                                ${emoji}
+                            </div>
+                            <div>
+                                <div class="flex items-center gap-2">
+                                    <span class="px-2 py-0.5 rounded-md ${rankBadgeClass} text-[10px] font-extrabold">TOP ${idx + 1}</span>
+                                    <h3 class="font-bold text-lg text-slate-800">${dog.이름}</h3>
+                                </div>
+                                <p class="text-xs text-slate-500 font-medium">${dog.품종} · ${dog.성별} · ${dog.업무}</p>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <span class="text-xs text-slate-400 font-medium block">궁합 점수</span>
+                            <span class="text-xl font-extrabold text-amber-600">${res.score}<span class="text-xs font-bold">%</span></span>
+                        </div>
+                    </div>
+
+                    <!-- 태그 & 주의 문구 -->
+                    <div class="flex flex-wrap gap-1.5 mb-3">
+                        ${res.tags.map(t => `<span class="px-2 py-0.5 bg-white border border-amber-200 text-amber-700 text-xs font-bold rounded-lg">${t}</span>`).join('')}
+                        ${res.warningText ? `<span class="px-2 py-0.5 bg-rose-50 border border-rose-200 text-rose-600 text-xs font-bold rounded-lg">${res.warningText}</span>` : ''}
+                    </div>
+
+                    <!-- 추천 이유 -->
+                    <div class="bg-white/80 rounded-xl p-2.5 mb-3 border border-slate-100 text-xs space-y-1">
+                        <p class="font-bold text-slate-700 mb-1">💚 이래서 잘 맞아요:</p>
+                        ${res.reasons.map(r => `<p class="text-slate-600 leading-snug">· ${r}</p>`).join('')}
+                    </div>
+
+                    <!-- 소개글 -->
+                    <div class="text-xs text-slate-500 bg-slate-100/70 p-2.5 rounded-xl leading-relaxed">
+                        <span class="font-bold text-slate-600 block mb-0.5">📝 소개글</span>
+                        <p class="line-clamp-3">${introText}</p>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
